@@ -1,0 +1,12 @@
+Codigo: 99, precio:  7.6000000000000000E+001, marca:  ht
+Stock disponible: 89, stock minimo: 76, descripcion:  yty
+Nombre: celular
+Codigo: 77, precio:  4.2000000000000000E+001, marca:  ds
+Stock disponible: 4, stock minimo: 66, descripcion:  dasr
+Nombre: celular2
+Codigo: 0, precio:  0.0000000000000000E+000, marca: 
+Stock disponible: 0, stock minimo: 0, descripcion: 
+Nombre: 
+Codigo: 234, precio:  3.4000000000000000E+001, marca: 342
+Stock disponible: 4, stock minimo: 234, descripcion: 34
+Nombre: asd
