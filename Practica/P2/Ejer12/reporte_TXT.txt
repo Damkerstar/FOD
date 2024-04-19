@@ -1,0 +1,2 @@
+nro_Usuario 12 ------ cantidadMensajesEnviados 3
+nro_Usuario 13 ------ cantidadMensajesEnviados 3
