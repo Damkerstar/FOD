@@ -141,31 +141,36 @@ begin
 		regF.info.nroPN:= valorAlto;
 end;
 
-procedure minimo(var vN: vectorN;var vF: vectorF; var vRN: vectorRN; var vRF: vectorRF; var minN: nacimientos; var minF: fallecimientos);
+procedure minimoN(var vN: vectorN; var vRN: vectorRN; var minN: nacimientos);
 var
 	i, pos: integer;
 begin
 	pos:= 0;
 	minN.info.nroPN:= valorAlto;
-	minF.info.nroPN:= valorAlto;
 	for i:= 1 to N do begin
 		if(vRN[i].info.nroPN < minN.info.nroPN) then begin
 			minN:= vRN[i];
 			pos:= i;
 		end;
 	end;
-	if(minN.info.nroPN <> valorAlto) then begin
+	if(minN.info.nroPN <> valorAlto) then
 		leerN(vN[pos], vRN[pos]);
-		i:= 1;
-		while({CONDICION QUE NO SE}) and(minN.info.nroPN <> vRF[i].info.nroPN) do begin
-			if(minN.info.nroPN = vRF[i].info.nroPN) then begin
-				minF:= vRF[i];
-				leerF(vF[i], vRF[i]);
-			end;
-			writeln(vRF[i].info.nroPN);
-			i:= i+1;
+end;
+
+procedure minimoF(var vF: vectorF; var vRF: vectorRF; var minF: fallecimientos);
+var
+	i, pos: integer;
+begin
+	pos:= 0;
+	minF.info.nroPN:= valorAlto;
+	for i:= 1 to N do begin
+		if(vRF[i].info.nroPN < minF.info.nroPN) then begin
+			minF:= vRF[i];
+			pos:= i;
 		end;
 	end;
+	if(minF.info.nroPN <> valorAlto) then
+		leerF(vF[pos], vRF[pos]);
 end;
 
 procedure crearyCargarM(var mae: maestro;vF: vectorF; vN: vectorN);
@@ -175,9 +180,8 @@ var
 	regM: maestros;
 	minN: nacimientos;
 	minF: fallecimientos;
-	i, dml: integer;
+	i: integer;
 begin
-	dml:= 0;
 	assign(mae, 'Maestro_FyN');
 	rewrite(mae);
 	for i:= 1 to N do begin
@@ -187,7 +191,8 @@ begin
 		leerF(vF[i], vRF[i]);
 	end;
 	
-	minimo(vN, vF, vRN, vRF, minN, minF);
+	minimoN(vN, vRN, minN);
+	minimoF(vF, vRF, minF);
 	while(minN.info.nroPN <> valorAlto) do begin
 		regM.nacimiento:= minN;
 		if(minN.info.nroPN = minF.info.nroPN) then begin
@@ -196,9 +201,17 @@ begin
 			regM.fallecimiento.hora:= minF.hora;
 			regM.fallecimiento.matriculaM:= minF.info.matriculaM;
 			regM.fallecimiento.lugar:= minF.lugar;
+			minimoF(vF, vRF, minF)
+		end
+		else begin
+			regM.fallecimiento.fallecio:= 'No fallecio';
+			regM.fallecimiento.fecha:= '';
+			regM.fallecimiento.hora:= 0;
+			regM.fallecimiento.matriculaM:= 0;
+			regM.fallecimiento.lugar:= '';
 		end;
 		write(mae, regM);
-		minimo(vN, vF, vRN, vRF, minN, minF, dml);
+		minimoN(vN, vRN, minN);
 	end;
 	close(mae);
 	for i:= 1 to N do begin
@@ -241,7 +254,7 @@ begin
 			writeln(txt, madre.DNI);
 		end;
 		writeln(txt, '-----');
-		if(regM.fallecimiento.fallecio <> 'Fallecio') then begin
+		if(regM.fallecimiento.fallecio = 'Fallecio') then begin
 			with regM.fallecimiento do begin
 				writeln(txt, fallecio);
 				writeln(txt, matriculaM);
