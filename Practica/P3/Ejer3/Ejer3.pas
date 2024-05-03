@@ -32,8 +32,10 @@ end;
 procedure cargarA(var arch: archivo);
 var
 	n: novela;
+	nom: string;
 begin
-	assign(arch, 'Novelas');		// Le asigno un nombre fisico al archivo logico
+	write('Ingrese el nombre del archivo'); readln(nom);
+	assign(arch, nom);		// Le asigno un nombre fisico al archivo logico
 	rewrite(arch);					// Creo el archivo de lectura y escritura
 	n.codigo:= 0;					// El codigo 0 va a ser mi cabecera
 	
@@ -46,7 +48,7 @@ begin
 end;
 
 
-// HACER ALTA AL ARCHIVO
+// HACER BAJA AL ARCHIVO
 procedure leerArch(var arch: archivo; var n: novela);
 begin
 	if(not eof(arch)) then
@@ -55,13 +57,47 @@ begin
 		n.codigo:= valorAlto;
 end;
 
+procedure bajaNovela(var arch: archivo);
+var
+	n, cabe: novela;
+	cod: integer;
+begin
+	write('Ingrese el codigo a eliminar'); readln(cod);
+	leerArch(arch, cabe);			// Leo la cabecera
+	leerArch(arch, n);			// Leo el siguiente registro para verificar si es el mismo codigo
+	
+	// Busco el codigo si esta en el archivo (si esta eliminado es lo mismo que no este)
+	while((n.codigo <> valorAlto) and (n.codigo <> cod)) do
+		leerArch(arch, n);			// Leemos en el archivo y avanzamos el puntero
+	// Si esta en el archivo y no esta borrado
+	if(n.codigo = cod) then begin
+		seek(arch, filepos(arch)-1);	// Nos ubicamos en el anterior al puntero
+		write(arch, cabe);				// Escribimos la cabecera en el lugar que se va a eliminar el registro
+		seek(arch, 0);					// Nos movemos a la cabecera
+		n.codigo:= n.codigo*-1;			// Escribimos el codigo de tal manera que se sepa que esta eliminado
+		write(arch, n);					// Escribimos el registro eliminado en la cabecera
+	end
+	else
+		writeln('No se encontro el codigo que se estaba buscando o ya esta borrado');
+end;
+
+
+procedure modificarNovela(var arch: archivo);
+var
+	n: novela;
+begin
+	
+end;
+
+
+// HACER ALTA AL ARCHIVO
 procedure altaNovela(var arch: archivo);
 var
 	n, aux: novela;
 begin
 	// Suponemos que las novelas estan ordenadas, 
 		// entonces cada codigo va a tener la posicion y el registro de la novela
-	leerArch(arch, n);		// Tomamos la cabezera
+	leerArch(arch, aux);		// Tomamos la cabezera
 	
 	// TIENE QUE SER SI O SI MENOR A 0 porque si es un registro que no esta eliminado
 		// quedara con un codigo mayor a 0
@@ -80,7 +116,6 @@ begin
 		writeln('No hay mas espacio libre en el archivo');
 end;
 
-// HACER BAJA AL ARCHIVO
 
 
 // HACER ALTAS Y BAJAS DEL ARCHIVO
@@ -96,15 +131,14 @@ begin
 		writeln('2) Dar de baja una novela');
 		writeln('3) Modificar una novela');
 		write('Opcion '); readln(user);
-		case user do begin
+		case user of
 			1: altaNovela(arch);
-			2:
-			3:
+			2: bajaNovela(arch); 
+			3: modificarNovela(arch);
 		end;
 	end;
 	close(arch);
 end;
-
 
 BEGIN
 	
