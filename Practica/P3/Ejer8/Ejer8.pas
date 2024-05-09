@@ -13,6 +13,9 @@ type
 	archivo = file of distribucion;
 
 
+// SIEMPRE CADA ARCHIVOS QUE SE PUEDEN DAR DE BAJA SUS DATOS TIENEN REGISTROS CABECERAS
+	// por ejemplo: detalle no es necesario darle una cabecera, porque no va a tener datos eliminados
+	// Si dice que ya existe el archivo o algo parecido, si se debe eliminar un dato entonces tiene cabecera
 // CARGAR ARCHIVO QUE YA SE TIENE
 procedure cargarArch(var arch: archivo);
 var
@@ -52,7 +55,7 @@ begin
 		d.nombre:= valorAlto;
 end;
 
-function ExisteDistribucion(var arch: archivo; nom: string): boolean;
+procedure ExisteDistribucion(var arch: archivo; nom: string; var ok: boolean);
 var
 	d: distribucion;
 begin
@@ -63,7 +66,7 @@ begin
 		leerArch(arch, d);
 	end;
 	close(arch);
-	ExisteDistribucion:= d.nombre = nom;
+	ok:= d.nombre = nom;
 end;
 
 
@@ -81,10 +84,13 @@ end;
 procedure AltaDistribucion(var arch: archivo);
 var
 	dNue, cabe: distribucion;
+	ok: boolean;
 begin
 	leerDistribucion(dNue);
 	
-	if(not ExisteDistribucion(arch, dNue.nombre)) then begin
+	// Si no existe la distribucion la agrego al archivo
+	ExisteDistribucion(arch, dNue.nombre, ok);
+	if(not ok) then begin
 		reset(arch);			// Abro el archivo binario de lectura y escritura
 		leerArch(arch, cabe);
 		
@@ -115,11 +121,13 @@ var
 	d, cabe: distribucion;
 	nom: string;
 	pos: integer;
+	ok: boolean;
 begin
 	write('Ingrese el nombre de la distribucion a eliminar '); readln(nom);
 	
 	// Busco si existe la distribucion a eliminar
-	if(ExisteDistribucion(arch, nom)) then begin
+	ExisteDistribucion(arch, nom, ok);
+	if(ok) then begin
 		reset(arch);					// Abro el archivo binario de lectura y escritura
 		leerArch(arch, cabe);			// Leo la cabecera
 		

@@ -130,6 +130,10 @@ begin
 	close(mae);
 	close(nMae);
 	
+	// Borrar el archivo binario maestro para que no haya confuncion de nombres
+	erase(mae);
+	
+	// Asignarle un nuevo nombre al archivo binario
 	Rename(nMae, 'maestro');
 end;
 
@@ -149,5 +153,6 @@ BEGIN
 	
 	writeln('Guardar nuevo maestro sin las ropas absoletas');
 	nuevoMaestro(nueMaestro, mae);
+	// BORARR EL ARCHIVO BINARIO MAESTRO PARA PODER VER COMO CAMBIA
 END.
 
