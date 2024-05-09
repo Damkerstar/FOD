@@ -1,7 +1,7 @@
 program untitled;
 const
 	valorAlto = 999;
-	N = 50;
+	N = 2;
 type
 	informacion = record
 		nroPN: integer;
@@ -18,7 +18,7 @@ type
 		ciudad: string;
 	end;
 	
-	falimiliar = record
+	familiar = record
 		nombre: string;
 		apellido: string;
 		DNI: integer;
@@ -38,23 +38,33 @@ type
 		lugar: string;
 	end;
 	
+	
+	fallecimientosM = record
+		fallecio: string;
+		matriculaM: integer;
+		fecha: string;
+		hora: integer;
+		lugar: string;
+	end;
+	
 	maestros = record
 		nacimiento: nacimientos;
-		fallecimientos: fallecimientos
+		fallecimiento: fallecimientosM;
 	end;
+	
 	
 	maestro = file of maestros;
 	detalleF = file of fallecimientos;
-	detalleN = file of nacimietos;
+	detalleN = file of nacimientos;
 	
 	vectorN = array[1..N] of detalleN;
 	vectorF = array[1..N] of detalleF;
-	vectorRN = array[1..N] of fallecimientos;
-	vectorRF = array[1..N] of nacimientos;
+	vectorRN = array[1..N] of nacimientos;
+	vectorRF = array[1..N] of fallecimientos;
 
 
 // CARGAR ARCHIVOS DETALLES
-procedure cargarA(var vF: vectorF; var vN: vectorN);
+procedure cargarD(var vF: vectorF; var vN: vectorN);
 var
 	regN: nacimientos;
 	regF: fallecimientos;
@@ -113,8 +123,165 @@ begin
 end;
 
 
+// CREAR Y CARGAR MAESTRO
+procedure leerN(var detN: detalleN; var regN: nacimientos);
+begin
+	if(not eof(detN)) then
+		read(detN, regN)
+	else
+		regN.info.nroPN:= valorAlto;
+end;
+
+procedure leerF(var detF: detalleF; var regF: fallecimientos);
+begin
+	if(not eof(detF)) then begin
+		read(detF, regF);
+	end
+	else
+		regF.info.nroPN:= valorAlto;
+end;
+
+procedure minimoN(var vN: vectorN; var vRN: vectorRN; var minN: nacimientos);
+var
+	i, pos: integer;
+begin
+	pos:= 0;
+	minN.info.nroPN:= valorAlto;
+	for i:= 1 to N do begin
+		if(vRN[i].info.nroPN < minN.info.nroPN) then begin
+			minN:= vRN[i];
+			pos:= i;
+		end;
+	end;
+	if(minN.info.nroPN <> valorAlto) then
+		leerN(vN[pos], vRN[pos]);
+end;
+
+procedure minimoF(var vF: vectorF; var vRF: vectorRF; var minF: fallecimientos);
+var
+	i, pos: integer;
+begin
+	pos:= 0;
+	minF.info.nroPN:= valorAlto;
+	for i:= 1 to N do begin
+		if(vRF[i].info.nroPN < minF.info.nroPN) then begin
+			minF:= vRF[i];
+			pos:= i;
+		end;
+	end;
+	if(minF.info.nroPN <> valorAlto) then
+		leerF(vF[pos], vRF[pos]);
+end;
+
+procedure crearyCargarM(var mae: maestro;vF: vectorF; vN: vectorN);
+var
+	vRF: vectorRF;
+	vRN: vectorRN;
+	regM: maestros;
+	minN: nacimientos;
+	minF: fallecimientos;
+	i: integer;
+begin
+	assign(mae, 'Maestro_FyN');
+	rewrite(mae);
+	for i:= 1 to N do begin
+		reset(vF[i]);
+		reset(vN[i]);
+		leerN(vN[i], vRN[i]);
+		leerF(vF[i], vRF[i]);
+	end;
+	
+	minimoN(vN, vRN, minN);
+	minimoF(vF, vRF, minF);
+	while(minN.info.nroPN <> valorAlto) do begin
+		regM.nacimiento:= minN;
+		if(minN.info.nroPN = minF.info.nroPN) then begin
+			regM.fallecimiento.fallecio:= 'Fallecio';
+			regM.fallecimiento.fecha:= minF.fecha;
+			regM.fallecimiento.hora:= minF.hora;
+			regM.fallecimiento.matriculaM:= minF.info.matriculaM;
+			regM.fallecimiento.lugar:= minF.lugar;
+			minimoF(vF, vRF, minF)
+		end
+		else begin
+			regM.fallecimiento.fallecio:= 'No fallecio';
+			regM.fallecimiento.fecha:= '';
+			regM.fallecimiento.hora:= 0;
+			regM.fallecimiento.matriculaM:= 0;
+			regM.fallecimiento.lugar:= '';
+		end;
+		write(mae, regM);
+		minimoN(vN, vRN, minN);
+	end;
+	close(mae);
+	for i:= 1 to N do begin
+		close(vF[i]);
+		close(vN[i]);
+	end;
+end;
+
+
+// LISTAR EN UN TXT
+procedure leerM(var mae: maestro; var regM: maestros);
+begin
+	if(not eof(mae)) then
+		read(mae, regM)
+	else
+		regM.nacimiento.info.nroPN:= valorAlto;
+end;
+procedure listarTXT(var mae: maestro);
+var
+	txt: Text;
+	regM: maestros;
+begin
+	reset(mae);
+	assign(txt, 'info_Personas.txt');
+	rewrite(txt);
+	
+	leerM(mae, regM);
+	while(regM.nacimiento.info.nroPN <> valorAlto) do begin
+		with regM.nacimiento do begin
+			writeln(txt, info.nroPN);
+			writeln(txt, info.nombre);
+			writeln(txt, info.apellido);
+			writeln(txt, info.matriculaM);
+			writeln(txt, direccionD.calle,' ', direccionD.nro,' ', direccionD.piso,' ', direccionD.depto,' ', direccionD.ciudad);
+			writeln(txt, padre.nombre);
+			writeln(txt, padre.apellido);
+			writeln(txt, padre.DNI);
+			writeln(txt, madre.nombre);
+			writeln(txt, madre.apellido);
+			writeln(txt, madre.DNI);
+		end;
+		writeln(txt, '-----');
+		if(regM.fallecimiento.fallecio = 'Fallecio') then begin
+			with regM.fallecimiento do begin
+				writeln(txt, fallecio);
+				writeln(txt, matriculaM);
+				writeln(txt, fecha);
+				writeln(txt, hora);
+				writeln(txt, lugar);
+			end;
+		end
+		else
+			writeln(txt, 'No fallecio');
+		writeln(txt, '-----');
+		leerM(mae, regM);
+	end;
+	close(txt);
+	close(mae);
+end;
+
+
+var
+	mae: maestro;
+	vN: vectorN;
+	vF: vectorF;
 BEGIN
+	cargarD(vF, vN);
 	
+	crearyCargarM(mae, vF, vN);
 	
+	listarTXT(mae);
 END.
 
